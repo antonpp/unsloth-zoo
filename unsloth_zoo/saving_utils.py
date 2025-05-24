@@ -561,7 +561,11 @@ def merge_and_overwrite_lora(
     # All Unsloth Zoo code licensed under LGPLv3
     # Directly downloads 16bit original weights and merges LoRA
     inner_model = model.base_model.model if isinstance(model, PeftModelForCausalLM) else model
-    inner_model = inner_model.base_model if hasattr(model, "base_model") else inner_model
+    
+    # Fix for https://github.com/unslothai/unsloth/issues/2086
+    # If we set inner_model to base_model we will write the wrong config.json to disk
+    if not(isinstance(inner_model.config.architectures, list) and "Gemma3ForConditionalGeneration" in inner_model.config.architectures):
+        inner_model = inner_model.base_model if hasattr(model, "base_model") else inner_model
 
     base_model = model.base_model if isinstance(model, PeftModelForCausalLM) else model
 
